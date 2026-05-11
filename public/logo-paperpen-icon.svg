@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
+  <!-- 圆角方块，暖米色底 -->
+  <rect width="30" height="30" rx="7" fill="#f6f1e7"/>
+  <!-- 细描边 -->
+  <rect x="0.75" y="0.75" width="28.5" height="28.5" rx="6.25" stroke="#c47a40" stroke-width="0.9" fill="none" opacity="0.25"/>
+
+  <!-- 「小」字手工笔画，品牌橙 -->
+  <!-- 中竖：上细下顿，带收尾 -->
+  <path d="M15 5.5 C15.1 7 15 9.5 14.9 12.5 C14.8 15.5 15 19 15.1 21.5 C15.15 22.8 15.1 23.8 15 24.2"
+        stroke="#c47a40" stroke-width="1.55" stroke-linecap="round" fill="none"/>
+  <!-- 左撇：从中竖出发，向左下弯 -->
+  <path d="M14.5 11 C13.2 12 11.8 13.5 10.8 15 C10 16.2 9.7 17.5 10.1 18.4"
+        stroke="#c47a40" stroke-width="1.45" stroke-linecap="round" fill="none"/>
+  <!-- 右捺：对称，向右下弯 -->
+  <path d="M15.5 11 C16.8 12 18.2 13.5 19.2 15 C20 16.2 20.3 17.5 19.9 18.4"
+        stroke="#c47a40" stroke-width="1.45" stroke-linecap="round" fill="none"/>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
+  <defs>
+    <!-- 橙到深橙渐变，带一点暖红 -->
+    <linearGradient id="bg" x1="6" y1="0" x2="24" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#e8734a"/>
+      <stop offset="100%" stop-color="#c45628"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 圆角底，渐变橙 -->
+  <rect width="30" height="30" rx="7.5" fill="url(#bg)"/>
+  <!-- 顶部微高光 -->
+  <rect x="3" y="1.5" width="24" height="9" rx="4.5" fill="white" opacity="0.08"/>
+
+  <!-- 「小」字 — 几何感骨架，微弧，白色 -->
+  <!-- 中竖：略带弧感，细挺 -->
+  <path d="M15 6.5 L15 23"
+        stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- 左点：短折，微弧，从中竖中段出发向左下 -->
+  <path d="M14.5 11.5 C13.5 13 11.8 15 11 17"
+        stroke="white" stroke-width="1.35" stroke-linecap="round" fill="none"/>
+
+  <!-- 右点：对称 -->
+  <path d="M15.5 11.5 C16.5 13 18.2 15 19 17"
+        stroke="white" stroke-width="1.35" stroke-linecap="round" fill="none"/>
+</svg>

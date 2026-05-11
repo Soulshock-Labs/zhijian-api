@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="250" viewBox="0 0 220 250" fill="none">
+  <ellipse cx="110" cy="244" rx="45" ry="6" fill="rgba(60,40,20,.08)"></ellipse>
+  <ellipse cx="110" cy="172" rx="68" ry="62" fill="#f5c036"></ellipse>
+  <ellipse cx="110" cy="185" rx="44" ry="40" fill="#fde68a" opacity=".55"></ellipse>
+  <ellipse cx="42" cy="168" rx="30" ry="18" fill="#e8a820" transform="rotate(-35 42 168)"></ellipse>
+  <ellipse cx="178" cy="168" rx="30" ry="18" fill="#e8a820" transform="rotate(35 178 168)"></ellipse>
+  <line x1="90" y1="228" x2="80" y2="244" stroke="#e07040" stroke-width="4.5" stroke-linecap="round"></line>
+  <path d="M80 244 L74 248 M80 244 L82 249 M80 244 L86 247" stroke="#e07040" stroke-width="3.5" stroke-linecap="round"></path>
+  <line x1="130" y1="228" x2="140" y2="244" stroke="#e07040" stroke-width="4.5" stroke-linecap="round"></line>
+  <path d="M140 244 L134 248 M140 244 L142 249 M140 244 L146 247" stroke="#e07040" stroke-width="3.5" stroke-linecap="round"></path>
+  <circle cx="110" cy="106" r="57" fill="#f5c036"></circle>
+  <ellipse cx="110" cy="116" rx="35" ry="27" fill="#fde68a" opacity=".45"></ellipse>
+  <ellipse cx="108" cy="50" rx="10" ry="16" fill="#f5c036" transform="rotate(-20 108 50)"></ellipse>
+  <ellipse cx="122" cy="55" rx="8" ry="13" fill="#f0b830" transform="rotate(15 122 55)"></ellipse>
+  <ellipse cx="94" cy="55" rx="8" ry="13" fill="#f0b830" transform="rotate(-15 94 55)"></ellipse>
+  <path d="M72 102 Q88 88 104 102" stroke="#2a2218" stroke-width="5" stroke-linecap="round" fill="none"></path>
+  <path d="M116 102 Q132 88 148 102" stroke="#2a2218" stroke-width="5" stroke-linecap="round" fill="none"></path>
+  <ellipse cx="68" cy="118" rx="14" ry="9" fill="#e07040" opacity=".3"></ellipse>
+  <ellipse cx="152" cy="118" rx="14" ry="9" fill="#e07040" opacity=".3"></ellipse>
+  <path d="M100 120 Q110 135 120 120 Q110 115 100 120Z" fill="#e07040"></path>
+  <rect x="86" y="54" width="50" height="7" rx="2" fill="#2a2218"></rect>
+  <rect x="98" y="44" width="26" height="11" rx="2" fill="#2a2218"></rect>
+  <line x1="134" y1="58" x2="140" y2="68" stroke="#2a2218" stroke-width="2" stroke-linecap="round"></line>
+  <circle cx="140" cy="70" r="2.5" fill="#e07040"></circle>
+</svg>
