@@ -13,12 +13,15 @@ routers/planning.py — 周日联动路由（HTTP 薄层）
 """
 from __future__ import annotations
 
+import asyncio
 import copy
 import io
 import json
 import os
 import re
+import time
 from typing import Optional
+from uuid import uuid4
 
 from docx.opc.exceptions import PackageNotFoundError
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
@@ -40,6 +43,11 @@ from word_engine.doc_reader import extract_doc_context, to_markdown
 from services.doc_space import get_doc_md, get_all_docs_md
 
 router = APIRouter()
+
+# ── 内存 Job Store（单实例 Cloud Run 可用） ──────────────────────────────
+_JOB_STORE: dict[str, dict] = {}
+_JOB_TTL = 600  # 10 分钟后过期
+
 
 
 # ── /generate-weekly ──────────────────────────────────────────────────
@@ -319,3 +327,118 @@ async def preview_daily(
         phil=phil,
     )
     return {"status": "ok", "day": day, "task": target.get("task"), "content": content}
+
+
+# ── /generate-weekly-job（异步 Job 版） ───────────────────────────────────
+@router.post("/generate-weekly-job", tags=["周日联动"])
+async def start_generate_weekly_job(
+    user_token:  str = Form(..., description="登录 token"),
+    theme:       str = Form(...,  description="周主题"),
+    phil:        str = Form(...,  description="教育理念"),
+    activities:  str = Form("[]", description="活动类型列表（JSON）"),
+    class_level: str = Form("中班", description="班级（小班/中班/大班）"),
+    model:       str = Form("",   description="指定模型，空则使用默认"),
+    ref_doc:     Optional[UploadFile] = File(None, description="参考文档（可选）"),
+):
+    """启动异步周计划生成任务，立即返回 job_id，前端轮询 /generation-jobs/{job_id}。"""
+    account = require_permission(user_token, "generate")
+    account_id = str(account.get("account_id", "")).strip()
+
+    try:
+        acts_list: list[str] = json.loads(activities) if activities else []
+        if not isinstance(acts_list, list):
+            acts_list = []
+    except (json.JSONDecodeError, TypeError):
+        acts_list = []
+
+    # 提前读文件（UploadFile 只能在请求生命周期内读取）
+    doc_md = ""
+    if ref_doc is not None:
+        filename = ref_doc.filename or ""
+        ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+        ALLOWED_EXTS = {"docx", "pdf", "jpg", "jpeg", "png", "webp", "gif"}
+        if ext in ALLOWED_EXTS:
+            file_bytes = await _read_upload_with_limit(ref_doc, MAX_UPLOAD_FILE_SIZE)
+            ctx = extract_doc_context(file_bytes, filename)
+            if ctx.ok:
+                doc_md = to_markdown(ctx)
+
+    job_id = f"wj_{uuid4().hex[:12]}"
+    _JOB_STORE[job_id] = {
+        "status": "running",
+        "job_id": job_id,
+        "type": "weekly",
+        "started_at": time.time(),
+        "progress": 5,
+    }
+
+    # 清理过期 job（顺手，不阻塞）
+    now = time.time()
+    expired = [k for k, v in _JOB_STORE.items() if now - v.get("started_at", now) > _JOB_TTL]
+    for k in expired:
+        _JOB_STORE.pop(k, None)
+
+    async def _run_job():
+        t0 = time.time()
+        try:
+            loop = asyncio.get_event_loop()
+            plan = await loop.run_in_executor(
+                None,
+                lambda: generate_weekly_content(theme, phil, acts_list, class_level, model=model, doc_md=doc_md),
+            )
+            _JOB_STORE[job_id].update({
+                "status": "success",
+                "progress": 100,
+                "elapsed_seconds": round(time.time() - t0, 1),
+                "result": {"status": "ok", "weekly_plan": plan},
+            })
+        except Exception as exc:
+            _JOB_STORE[job_id].update({
+                "status": "error",
+                "error": str(exc),
+                "elapsed_seconds": round(time.time() - t0, 1),
+            })
+
+    asyncio.create_task(_run_job())
+    return {"status": "ok", "job_id": job_id}
+
+
+# ── /generation-jobs/{job_id}（轮询） ────────────────────────────────────
+@router.get("/generation-jobs/{job_id}", tags=["周日联动"])
+async def get_generation_job(job_id: str, user_token: str):
+    """轮询任务状态。status: running / success / error。"""
+    require_permission(user_token, "generate")
+    job = _JOB_STORE.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="任务不存在或已过期")
+    elapsed = round(time.time() - job.get("started_at", time.time()), 1)
+    progress = job.get("progress", 5)
+    if job["status"] == "running":
+        # 基于时间估算进度（周计划通常 15-30 秒）
+        progress = min(90, max(progress, int(elapsed / 25 * 90)))
+        _JOB_STORE[job_id]["progress"] = progress
+    return {
+        **job,
+        "elapsed_seconds": job.get("elapsed_seconds", elapsed),
+        "progress": progress,
+    }
+
+
+# ── /generations（最近生成记录） ─────────────────────────────────────────
+@router.get("/generations", tags=["历史记录"])
+async def list_generations(user_token: str, limit: int = 20):
+    """返回最近生成记录列表（当前仅返回内存中的 job 快照）。"""
+    require_permission(user_token, "generate")
+    records = []
+    for job in sorted(_JOB_STORE.values(), key=lambda j: j.get("started_at", 0), reverse=True):
+        if job.get("status") == "success":
+            records.append({
+                "record_id": job["job_id"],
+                "type": job.get("type", "weekly"),
+                "status": "success",
+                "title": job.get("result", {}).get("weekly_plan", {}).get("week_theme", ""),
+                "duration_ms": int(job.get("elapsed_seconds", 0) * 1000),
+            })
+        if len(records) >= limit:
+            break
+    return {"status": "ok", "records": records, "total": len(records)}
